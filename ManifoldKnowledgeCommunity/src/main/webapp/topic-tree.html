@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>流形--专业、开放的知识分享社区</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" type="image/jpeg" href="image/manifold-logo5.jpg" />
+    <link rel="stylesheet" type="text/css" href="css/manifold-topic.css">
+    <link rel="stylesheet" type="text/css" href="css/my-layer-skin.css">
+    <link href="css/style.css" rel="stylesheet">
+
+    <!--jQuery-->
+    <script type="text/javascript " src="js/jquery-3.3.1.min.js"></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+    <script>
+        var user_info = null;
+
+        function chkToken() {
+            $.ajax({
+                url: 'manifold/chkToken',
+                method: 'get',
+                headers: createAuthorizationTokenHeader(),
+                success: function(data) {
+                    if (data.email == 'fail') {
+                        location.href = "login.html";
+                    } else {
+                        user_info = data;
+                        $('body').css('display', 'block');
+                        console.info('检验成功,user_email:' + data.email);
+
+                    }
+                },
+                async: 'false',
+                dataType: 'json'
+            });
+        };
+        chkToken();
+    </script>
+</head>
+
+<body style="display: none">
+    <canvas id="canvas"></canvas>
+    <div class="top-menu-nav">
+        <div class="topnav">
+            <center>
+                <a id="home-page" href="manifold.html"><i class="fa fa-tv fa-1g"></i>&nbsp;&nbsp;主页</a>
+                <a id="topic-tree" href="topic-tree.html"><i class="fa fa-tree fa-1g"></i>&nbsp;&nbsp;话题树</a>
+                <a id="discover-page" href="discover.html"><i class="fa fa-twitch fa-1g"></i>&nbsp;&nbsp;发现</a>&nbsp;&nbsp;
+                <div class="search-input-container">
+                    <input id="search-input" type="text" placeholder="搜索 问题/话题/用户.." onkeyup="search_autocomplete()">
+                    <div class="search-autocomplete">
+
+                    </div>
+                </div>
+                <button id="search-btn" onclik=""><i class="fa fa-search fa-lg"></i>&nbsp;search</button>
+            </center>
+        </div>
+    </div>
+    <div>
+        <div class="topic-container">
+
+        </div>
+        <!--所属子问题集合(subset)-->
+        <div class="sub-question-set">
+            <div class="main-container-body">
+
+            </div>
+        </div>
+
+    </div>
+    <div class="right-top">
+        <li>
+            <a href="javascript:openQuestionEdit();">
+                <i class="fa fa-lightbulb-o fa-2x"></i>
+                <div>
+                    我要提问
+                </div>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:openCollectionEdit();">
+                <i class="fa fa-bookmark-o fa-2x"></i>
+                <div>
+                    我的收藏
+                </div>
+            </a>
+        </li>
+    </div>
+
+
+    <div class="right-foot">
+        <div class="menu">
+            <li class="item" id="profile">
+                <a id="username" href="#profile" class="btn"><i class="fa fa-user-o"></i>用户名</a>
+                <div class="smenu">
+                    <a href="javascript:openUserInfoEdit()">个人资料</a>
+                    <a href="#">Picture</a>
+                </div>
+            </li>
+            <li class="item" id="message">
+                <a href="#message" class="btn"><i class="fa fa-envelope"></i>消息</a>
+                <div class="smenu">
+                    <a href="#">new</a>
+                    <a href="#">Sent</a>
+                    <a href="#">Spam</a>
+                </div>
+            </li>
+            <li class="item" id="setting">
+                <a href="#setting" class="btn"><i class="fa fa-bell-o"></i>关注</a>
+                <div class="smenu">
+                    <a href="#">关注了</a>
+                    <a href="#">关注者</a>
+                </div>
+            </li>
+            <li class="item" id="Logout">
+                <a href="javascript:logout();" class="btn"><i class="fa fa-sign-out"></i>Logout</a>
+            </li>
+        </div>
+    </div>
+
+
+    <!--base-->
+    <script type="text/javascript " src="js/manifold.js"></script>
+    <script type="text/javascript " src="js/question-edit-layer.js"></script>
+    <!--layer-->
+    <script type="text/javascript " src="layer/2.4/layer.js"></script>
+    <!--layui-->
+    <script type="text/javascript" src="layui/layui.js"></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+    <!--话题树-->
+    <script type="text/javascript " src="js/manifold-topic.js"></script>
+    <script>
+        var fatherTopic = null;
+        var sonTopic = null;
+        var countSon = 0;
+        $(function() {
+            /*配置layui弹出层自定义样式*/
+            layer.config({
+                skin: 'my-layer-skin'
+            });
+
+            $('#topic-tree').css({
+                'background-color': '#3498db',
+                'color': '#fff'
+            })
+            loadRoot();
+            loadSonTopic(1);
+            setTimeout("arrageSons();", 500);
+
+            $('#username').html('<i class="fa fa-user-o"></i>' + user_info.username + '<img src="image/user_avatar/' + user_info.avatar + '">');
+
+        })
+
+
+        function loadPopQuestion() {
+
+        }
+
+        function search_autocomplete() {
+            $('.search-autocomplete').html('');
+            var keyword = $('#search-input').val();
+            if (keyword != '') {
+                $.ajax({
+                    url: 'manifold/question/key',
+                    method: 'get',
+                    data: {
+                        'keyword': keyword
+                    },
+                    success: function(returnData) {
+                        if (returnData.length != 0) {
+                            var div = '';
+                            $.each(returnData, function(i, v) {
+                                var str = lightKeyWrod(keyword, v.title);
+                                if (str.length > 15) {
+                                    str = str.substring(0, 15);
+                                }
+                                div += `
+                <div onclick="goToQuestion('` + v.questionId + `')" class="search-autocomplete-item">
+                    ` + str + `
+                </div>
+                `;
+                            })
+                            $('.search-autocomplete').html(div);
+                        } else {
+                            $('.search-autocomplete').css('display', 'none');
+                        }
+
+                    },
+                    dataType: 'json'
+                })
+                $('.search-autocomplete').css('display', 'block');
+            } else {
+                $('.search-autocomplete').css('display', 'none');
+                $('.search-autocomplete').html('');
+            }
+        }
+
+        function getAid() {
+            return -1;
+        }
+
+        function reSetAid() {
+            aid = -1;
+        }
+
+        function goToQuestion(questionId) {
+            window.location.href = "question.html?questionId=" + questionId;
+        }
+
+        function lightKeyWrod(keyword, str) {
+            var reg = new RegExp("(" + keyword + ")", "g");
+            var newstr = str;
+            if (!reg.test(str))
+                newstr = str.replace(reg, "<font color=red>$1</font>");
+            return newstr;
+        }
+
+        function logout() {
+            layer.confirm("确定要退出吗", () => {
+                removeJwtToken();
+                window.location.href = "login.html";
+            })
+        }
+    </script>
+
+</body>
+
+</html>

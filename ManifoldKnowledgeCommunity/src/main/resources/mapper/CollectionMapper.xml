@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.ICollectionMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+
+    <resultMap type="Collects" id="collectionMap">
+        <id property="collectionId" column="collection_id"/>
+        <result property="collectionName" column="collection_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="uid" column="uid"/>
+    </resultMap>
+
+    <resultMap type="Answer" id="answerMap2">
+        <id property="answerId" column="answer_id"/>
+        <result property="content" column="content"/>
+        <result property="agree" column="agree"/>
+        <result property="disagree" column="disagree"/>
+        <result property="readTimes" column="read_times"/>
+        <!-- 关联关系：多对一 -->
+        <association property="question" javaType="Question">
+            <id property="questionId" column="question_id"/>
+            <result property="title" column="title"/>
+        </association>
+
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+        </association>
+
+    </resultMap>
+
+    <insert id="insert" parameterType="Collects">
+        insert into collection_table(collection_name,create_time,update_time,uid)
+        values(#{collectionName},#{createTime},#{updateTime},#{uid});
+    </insert>
+
+    <select id="queryAll" resultMap="collectionMap">
+        select * from collection_table where uid=#{arg0}
+    </select>
+
+    <insert id="addRelate" parameterType="java.lang.Long">
+        insert into collection_question_rela_table(collection_id,answer_id) values(#{collectionId},#{answerId})
+    </insert>
+
+    <select id="queryAnswerByCollectId" resultMap="answerMap2">
+        SELECT * FROM
+        (SELECT a.answer_id,a.question_id,a.content,a.uid,a.agree,a.disagree,a.read_times,b.title
+        FROM answer_table a,question_table b WHERE a.question_id=b.question_id) t1,
+        (SELECT answer_id FROM collection_question_rela_table WHERE collection_id=#{arg0}) t2
+        WHERE t1.answer_id=t2.answer_id
+    </select>
+
+</mapper>

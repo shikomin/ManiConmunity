@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>流形--专业、开放的知识分享社区</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" type="image/jpeg" href="image/manifold-logo5.jpg" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/question-editor.css">
+    <link rel="stylesheet" href="css/collection.css">
+    <!--jQuery-->
+    <script type="text/javascript " src="js/jquery-3.3.1.min.js"></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+    <script>
+        var user_info = null;
+
+        function chkToken() {
+            $.ajax({
+                url: 'manifold/chkToken',
+                method: 'get',
+                headers: createAuthorizationTokenHeader(),
+                success: function(data) {
+                    if (data.email == 'fail') {
+                        location.href = "login.html";
+                    } else {
+                        user_info = data;
+                        $('body').css('display', 'block');
+                        console.info('检验成功,user_email:' + data.email);
+                    }
+                },
+                async: 'false',
+                dataType: 'json'
+            });
+        };
+        chkToken();
+    </script>
+
+</head>
+
+<body>
+    <div class="collection-container">
+        <div>
+            <div onclick="openNewCollectEdit()" class="new-collect-contai">
+                <i class="fa fa-plus-square fa-1g"></i>&nbsp;&nbsp;新增收藏夹
+            </div>
+            <div class="new-collect-name">
+                收藏夹名:&nbsp;&nbsp;<input type="text" id="collects-name" value="" placeholder="收藏夹名">
+                <button onclick="submitNewCollect()" id="submit-new-collect" type="button">New!</button>
+            </div>
+            &nbsp;&nbsp;<br> &nbsp;&nbsp;&nbsp;&nbsp;我的收藏
+            <div id="my-collects">
+
+            </div>
+        </div>
+
+    </div>
+
+    <!--基础js-->
+    <script type="text/javascript " src="layer/2.4/layer.js"></script>
+
+    <!--富文本-->
+    <script src="ckeditor5-build-classic-master/build/ckeditor.js"></script>
+    <script>
+        var clickFunc = '';
+        var answerId = -1;
+        $(function() {
+            answerId = window.parent.getAid();
+            window.parent.reSetAid();
+            console.log(answerId);
+            loadCollects();
+        })
+
+        function goToQuestion(questionId) {
+            parent.window.location.href = "question.html?questionId=" + questionId;
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+
+        }
+
+        function openNewCollectEdit() {
+            $('.new-collect-contai').attr('onclick', 'closeNewCollectEdit()')
+            $('.new-collect-name').css('display', 'block');
+        }
+
+        function closeNewCollectEdit() {
+            $('.new-collect-contai').attr('onclick', 'openNewCollectEdit()')
+            $('.new-collect-name').css('display', 'none');
+        }
+
+        function submitNewCollect() {
+            $.ajax({
+                url: 'manifold/collects',
+                method: 'post',
+                data: {
+                    'collectionName': $('#collects-name').val(),
+                    'uid': user_info.uid
+                },
+                success: function(returnData) {
+                    if (returnData > 0) {
+                        layer.msg('创建成功', {
+                            time: 1000,
+                            icon: 1
+                        }, function() {
+                            closeNewCollectEdit();
+                            loadCollects();
+                        });
+                    } else {
+                        layer.msg('创建失败', {
+                            icon: 2
+                        });
+                    }
+                },
+                dataType: 'text'
+            })
+        }
+
+        function loadCollects() {
+            $.ajax({
+                url: 'manifold/collects',
+                method: 'get',
+                data: {
+                    'uid': user_info.uid
+                },
+                success: function(returnData) {
+                    var div = '';
+                    $.each(returnData, function(i, v) {
+                        div += `
+                        <div onclick="clickCollect('` + v.collectionId + `','` + answerId + `')" class="my-collect">
+                            ` + v.collectionName + `
+                        </div>
+                        <div id="my-collect-answers` + v.collectionId + `" class="my-collect-answers">
+                        
+                        </div>
+                        `;
+                    })
+                    $('#my-collects').html(div);
+                },
+                dataType: 'json'
+            })
+        }
+
+        function clickCollect(collectionId, aid) {
+            console.log(collectionId + ',' + aid);
+            if (aid == -1) {
+                $.ajax({
+                    url: 'manifold/collects/queryAnswers',
+                    method: 'get',
+                    data: {
+                        'collectionId': collectionId
+                    },
+                    success: function(returnData) {
+                        var div = '';
+                        $.each(returnData, function(i, v) {
+                            var title = v.question.title;
+                            if (title.length > 12) {
+                                title = title.substring(0, 20);
+                            }
+                            div += `
+                            <div onclick="goToQuestion('` + v.question.questionId + `')" class="my-collect-answer">
+                                ` + title + `
+                            </div>
+                            `;
+                        })
+                        $('#my-collect-answers' + collectionId).html(div);
+                    },
+                    dataType: 'json'
+                })
+            } else {
+                $.ajax({
+                    url: 'manifold/collects/addRela',
+                    method: 'post',
+                    data: {
+                        'collectionId': collectionId,
+                        'answerId': aid
+                    },
+                    success: function(returnData) {
+                        if (returnData > 0) {
+                            layer.msg('添加成功', {
+                                time: 1000,
+                                icon: 1
+                            }, function() {
+                                var index = parent.layer.getFrameIndex(window.name);
+                                parent.layer.close(index);
+                            });
+                        } else {
+                            layer.msg('添加失败', {
+                                icon: 2
+                            });
+                        }
+                    },
+                    dataType: 'text'
+                })
+            }
+        }
+
+        function goToQuestion(questionId) {
+            parent.window.location.href = "question.html?questionId=" + questionId;
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+
+        }
+    </script>
+</body>
+
+</html>

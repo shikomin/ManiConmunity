@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>流形--专业、开放的知识分享社区</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" type="image/jpeg" href="image/manifold-logo5.jpg" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/question-editor.css">
+
+    <!--jQuery-->
+    <script type="text/javascript " src="js/jquery-3.3.1.min.js"></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+    <script>
+        var user_info = null;
+
+        function chkToken() {
+            $.ajax({
+                url: 'manifold/chkToken',
+                method: 'get',
+                headers: createAuthorizationTokenHeader(),
+                success: function(data) {
+                    if (data.email == 'fail') {
+                        location.href = "login.html";
+                    } else {
+                        user_info = data;
+                        $('body').css('display', 'block');
+                        console.info('检验成功,user_email:' + data.email);
+                    }
+                },
+                async: 'false',
+                dataType: 'json'
+            });
+        };
+        chkToken();
+    </script>
+
+</head>
+
+<body>
+    <div class="question-editor-container">
+        <div id="user_info"></div>
+        <div id="goToQuestion"></div>
+        <h2>问题标题</h2>
+        <input class="question-title-input" id="question-title" name="question-title" type="text" required autocomplete="off" onkeyup="chkTitle()">
+        <h2>具体描述</h2>
+        <textarea class="ck-editor ck-content" id="question-content-editor" name="question-content-editor">
+               
+        </textarea>
+        <h2>所属话题</h2>
+        <div class="topic-selector">
+            <li class="li1">
+                <input class="question-topic-input" id="question-topic" name="question-topic" type="text" autocomplete="off" onkeyup="searchTopic()">
+                <ul id="keyword-topic-autocomplete">
+
+                </ul>
+            </li>
+            <li class="li2">
+                <ul id="topic-selected">
+
+                </ul>
+            </li>
+        </div>
+        <div>
+
+        </div>
+        <button class="submit-button" type="button" onclick="submit_question()">发布</button>
+    </div>
+
+
+    <!--基础js-->
+    <script type="text/javascript " src="layer/2.4/layer.js"></script>
+
+    <!--富文本-->
+    <script src="ckeditor5-build-classic-master/build/ckeditor.js"></script>
+    <script>
+        var editor_obj = null;
+        var editor_data = null;
+        var selected_index = 0;
+        window.onload = function() {
+            $('#user_info').html('<img src="image/user_avatar/' + user_info.avatar + '">' + user_info.username);
+            ClassicEditor
+                .create(document.querySelector("#question-content-editor"), {
+                    ckfinder: {
+                        uploadUrl: "manifold/upload/image" //图片上传url
+                    },
+                    toolbar: ['bold', 'italic', 'bulletedList', 'numberedList', 'imageTextAlternative', 'imageUpload', 'blockQuote', 'undo', 'redo'],
+                    language: 'zh-cn',
+                    image: {
+                        toolbar: ['imageTextAlternative'],
+                        styles: ['full', 'side']
+                    },
+                })
+                .then(editor => {
+                    editor_obj = editor;
+
+                    console.log(editor);
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+
+        function submit_question() {
+            var selected_topics = new Array();
+            editor_data = editor_obj.getData();
+            for (var i = 0; i < selected_index; i++) {
+                selected_topics[i] = $('#selected' + i).text();
+            }
+            console.log(editor_data);
+            console.log(selected_topics);
+            $.ajax({
+                url: 'manifold/question',
+                method: 'post',
+                data: {
+                    'title': $('#question-title').val(),
+                    'questionDesc': editor_data,
+                    'selectedTopics': selected_topics.toString(),
+                    'uid': user_info.uid
+                },
+                dataType: 'text',
+                success: function(returnData) {
+                    if (returnData != -1) {
+                        //操作成功，进行提示，并关闭当前窗口(设置时间，不然会有抖动情况)
+                        layer.msg('发布成功', {
+                            time: 1000,
+                            icon: 1
+                        }, function() {
+                            goToQuestion(returnData);
+                        });
+
+                    } else {
+                        layer.msg('发布失败', {
+                            icon: 2
+                        });
+                    }
+                }
+            })
+
+        }
+
+        //关键词搜索话题
+        function searchTopic() {
+            var keyword = $('.question-topic-input').val();
+            if (keyword == '') {
+                $('#keyword-topic-autocomplete').html('');
+            } else {
+                $.ajax({
+                    url: 'manifold/topic/keyword',
+                    method: 'get',
+                    data: {
+                        'keyword': keyword
+                    },
+                    success: function(returnData) {
+                        console.log(returnData);
+                        $('#keyword-topic-autocomplete').html('');
+                        var li = '';
+                        $.each(returnData, function(i, v) {
+                            li += `<li onclick="select_topic('${v.name}', '${v.topicId}')">${v.name}</li>`;
+                        })
+                        $('#keyword-topic-autocomplete').html(li);
+                    },
+                    dataType: 'json'
+                })
+            }
+        }
+        //把选择的话题添加到右边selected列表
+        function select_topic(name, id) {
+            $('#topic-selected').append('<li id="selected' + selected_index + '">' + name + '-' + id + '</li>');
+            selected_index++;
+        }
+
+
+        //检查问题标题
+        function chkTitle() {
+            $('#goToQuestion').html('');
+            var unChkTitle = $('#question-title').val();
+            $.ajax({
+                url: 'manifold/question/chktitle',
+                method: 'get',
+                data: {
+                    'title': unChkTitle
+                },
+                dataType: 'text',
+                success: function(returnData) {
+                    var btn = '';
+                    if (returnData != 'ok') {
+                        btn = `<button class="goToBtn" type="button" onclick="goToQuestion('` + returnData + `')">问题已存在(点击前往)</button>`;
+                        $('#goToQuestion').html(btn);
+                    } else {
+                        $('#goToQuestion').html('');
+                    }
+                }
+            })
+        }
+
+        function goToQuestion(questionId) {
+            parent.window.location.href = "question.html?questionId=" + questionId;
+            var index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(index);
+
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.ITopicMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+
+    <resultMap type="Topic" id="topicMap">
+        <id property="topicId" column="topic_id"/>
+        <result property="name" column="name"/>
+        <result property="avatar" column="avatar"/>
+        <result property="topicDesc" column="topic_desc"/>
+        <result property="fatherTopic" column="father_topic"/>
+        <result property="popularity" column="popularity"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <select id="queryRoot" resultMap="topicMap">
+        select * from topic_table where topic_id=1
+    </select>
+
+    <select id="queryAncestor" resultMap="topicMap">
+        select * from topic_table where topic_id=#{arg0}
+    </select>
+
+    <select id="querySonTopic" resultMap="topicMap">
+        select * from topic_table where father_topic=#{arg0}
+    </select>
+
+    <select id="queryTopicByKeyword" resultMap="topicMap">
+        select * from topic_table where topic_table.`name` like #{arg0};
+    </select>
+
+    <insert id="insert" parameterType="Topic">
+        INSERT INTO topic_table(name,topic_desc,father_topic,create_time)
+        VALUES(#{name},#{topicDesc},#{fatherTopic},#{createTime})
+    </insert>
+
+    <select id="queryTopicIdByQuestionId" resultType="java.lang.Long">
+       select topic_id from topic_question_rela_table where question_id=#{arg0}
+    </select>
+
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--设置映射接口位置-->
+<!--命名空间不能为空且唯一-->
+<mapper namespace="com.wander.manifold.mapper.BackMapper">
+
+    <resultMap type="User" id="userMap">
+        <id property="uid" column="uid"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="username" column="username"/>
+        <result property="status" column="status"/>
+        <result property="joinTime" column="join_time"/>
+        <result property="gender" column="gender"/>
+        <result property="phone" column="phone"/>
+        <result property="avatar" column="avatar"/>
+        <result property="intro" column="intro"/>
+        <result property="industry" column="industry"/>
+        <result property="education" column="education"/>
+        <result property="likedCount" column="liked_count"/>
+        <result property="followCount" column="follow_count"/>
+        <result property="followerCount" column="follower_count"/>
+        <result property="scanCount" column="scan_count"/>
+        <result property="score" column="score"/>
+    </resultMap>
+
+    <select id="query" resultMap="userMap">
+		SELECT * FROM manifold_community.user_table where status=1 limit
+		#{start},#{size}
+	</select>
+
+    <select id="queryblock" resultMap="userMap">
+		SELECT * FROM manifold_community.user_table where status=0 limit
+		#{start},#{size}
+	</select>
+
+    <select id="count" resultType="java.lang.Integer">
+		select count(1) from user_table;
+	</select>
+
+    <update id="update" parameterType="java.lang.Long">
+        update user_table set status=0 where uid=#{uid};
+    </update>
+
+    <update id="update2" parameterType="java.lang.Long">
+        update user_table set status=1 where uid=#{uid};
+    </update>
+
+</mapper>

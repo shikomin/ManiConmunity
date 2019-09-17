@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.IUserMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+
+    <resultMap type="User" id="userMap">
+        <id property="uid" column="uid"/>
+        <result property="email" column="email"/>
+        <result property="password" column="password"/>
+        <result property="username" column="username"/>
+        <result property="status" column="status"/>
+        <result property="joinTime" column="join_time"/>
+        <result property="gender" column="gender"/>
+        <result property="phone" column="phone"/>
+        <result property="avatar" column="avatar"/>
+        <result property="intro" column="intro"/>
+        <result property="industry" column="industry"/>
+        <result property="education" column="education"/>
+        <result property="likedCount" column="liked_count"/>
+        <result property="followCount" column="follow_count"/>
+        <result property="followerCount" column="follower_count"/>
+        <result property="scanCount" column="scan_count"/>
+        <result property="score" column="score"/>
+    </resultMap>
+
+    <select id="queryByEmailPsw" resultMap="userMap">
+        select * from user_table where email=#{email} and password=#{password};
+    </select>
+
+    <insert id="insert" parameterType="User">
+        insert into user_table(email,password,username,join_time) values(#{email},#{password},#{username},#{joinTime});
+    </insert>
+
+    <update id="activation" parameterType="java.lang.String">
+        update user_table set status=1 where email=#{email};
+    </update>
+
+    <select id="queryById" resultMap="userMap">
+        select * from user_table where uid=#{arg0}
+    </select>
+
+    <update id="update">
+        update user_table
+        set username=#{username},avatar=#{avatar},gender=#{gender},phone=#{phone},industry=#{industry},education=#{education}
+        where uid=#{uid};
+    </update>
+
+    <insert id="followAction" parameterType="java.lang.Long">
+        insert into follow_rela_table(followed,follower) values(#{followed},#{follower})
+    </insert>
+
+</mapper>

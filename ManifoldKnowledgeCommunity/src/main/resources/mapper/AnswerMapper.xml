@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.IAnswerMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+    <!-- 定义Pojo类属性与数据表字段对应关系 -->
+    <resultMap type="Answer" id="answerMap">
+        <id property="answerId" column="answer_id"/>
+        <result property="content" column="content"/>
+        <result property="agree" column="agree"/>
+        <result property="disagree" column="disagree"/>
+        <result property="readTimes" column="read_times"/>
+        <!-- 关联关系：多对一 -->
+        <association property="question" javaType="Question">
+            <id property="questionId" column="question_id"/>
+        </association>
+
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+            <result property="username" column="username"/>
+            <result property="avatar" column="avatar"/>
+            <result property="industry" column="industry"/>
+        </association>
+
+    </resultMap>
+
+
+
+    <insert id="insert" parameterType="Answer">
+        insert into answer_table(question_id,content,uid) values(#{question.questionId},#{content},#{user.uid})
+    </insert>
+
+    <select id="queryByQuestionId" resultMap="answerMap">
+        select a.answer_id,a.question_id,a.content,a.uid,a.agree,a.disagree,a.read_times,b.avatar,b.username,b.avatar,b.industry
+        from answer_table a,user_table b where a.uid=b.uid and a.question_id=#{arg0}
+    </select>
+
+
+</mapper>

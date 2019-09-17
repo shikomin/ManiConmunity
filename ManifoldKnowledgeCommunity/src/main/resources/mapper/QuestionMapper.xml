@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.IQuestionMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+
+    <resultMap type="Question" id="questionMap">
+        <id property="questionId" column="question_id"/>
+        <result property="title" column="title"/>
+        <result property="questionDesc" column="question_desc"/>
+        <result property="popularity" column="popularity"/>
+        <result property="createTime" column="create_time"/>
+        <result property="status" column="status"/>
+
+        <association property="user" javaType="User">
+            <id property="uid" column="uid"/>
+            <result property="username" column="username"/>
+            <result property="avatar" column="avatar"/>
+            <result property="industry" column="industry"/>
+        </association>
+
+    </resultMap>
+
+    <insert id="insert" parameterType="Question">
+        insert into question_table(title,question_desc,uid,popularity,create_time,status)
+        values(#{title},#{questionDesc},#{user.uid},#{popularity},#{createTime},#{status});
+    </insert>
+
+    <insert id="insertRelation" parameterType="java.lang.Long">
+        insert into topic_question_rela_table(topic_id,question_id)
+        values(#{topicId},#{questionId});
+    </insert>
+
+    <select id="queryByTitle" resultMap="questionMap">
+        select a.*,b.username,b.avatar,b.industry from question_table a,user_table b where a.uid=b.uid and a.title=#{arg0}
+    </select>
+
+    <select id="queryById" resultMap="questionMap">
+        select a.*,b.username,b.avatar,b.industry from question_table a,user_table b where a.uid=b.uid and a.question_id=#{arg0}
+    </select>
+
+    <select id="queryByPop" resultMap="questionMap">
+       SELECT a.*,b.username,b.avatar,b.industry FROM question_table a,user_table b WHERE a.uid=b.uid ORDER BY a.popularity DESC LIMIT 0,#{arg0};
+    </select>
+
+    <select id="queryByKey" resultMap="questionMap">
+        select * from question_table where title like #{arg0} or question_desc like #{arg0} limit 0,5
+    </select>
+
+    <select id="queryByTopicId" resultMap="questionMap">
+        SELECT b.* FROM
+        (SELECT question_id FROM topic_question_rela_table WHERE topic_id=#{arg0}) a,
+        (SELECT a.*,b.username,b.avatar,b.industry FROM question_table a,user_table b WHERE a.uid=b.uid) b
+        WHERE a.question_id=b.question_id;
+    </select>
+
+    <select id="queryByTime" resultMap="questionMap">
+        select a.*,b.username,b.avatar,b.industry FROM question_table a,user_table b WHERE a.uid=b.uid order by create_time desc limit 0,20;
+    </select>
+
+    <select id="queryRandomByTopicId" resultMap="questionMap">
+        select tb.* from
+        (SELECT b.* FROM
+        (SELECT question_id FROM topic_question_rela_table WHERE topic_id=#{arg0}) a,
+        (SELECT a.*,b.username,b.avatar,b.industry FROM question_table a,user_table b WHERE a.uid=b.uid) b
+        WHERE a.question_id=b.question_id) tb
+        order by rand( ) limit 1;
+    </select>
+
+</mapper>

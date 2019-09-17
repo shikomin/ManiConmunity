@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>流形--专业、开放的知识分享社区</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="shortcut icon" type="image/jpeg" href="image/manifold-logo5.jpg" />
+    <link rel="stylesheet" type="text/css" href="css/my-layer-skin.css">
+    <link rel="stylesheet" type="text/css" href="css/question.css">
+    <link rel="stylesheet" type="text/css" href="css/answer.css">
+    <link href="css/style.css" rel="stylesheet">
+    <!--jQuery-->
+    <script type="text/javascript " src="js/jquery-3.3.1.min.js"></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+
+    <script>
+        var user_info = null;
+
+        function chkToken() {
+            $.ajax({
+                url: 'manifold/chkToken',
+                method: 'get',
+                headers: createAuthorizationTokenHeader(),
+                success: function(data) {
+                    if (data.email == 'fail') {
+                        location.href = "login.html";
+                    } else {
+                        user_info = data;
+                        $('body').css('display', 'block');
+                        console.info('检验成功,user_email:' + data.email);
+                    }
+                },
+                async: 'false',
+                dataType: 'json'
+            });
+        };
+        chkToken();
+    </script>
+
+</head>
+
+<body style="display: none">
+    <canvas id="canvas"></canvas>
+    <div class="top-menu-nav">
+        <div class="topnav">
+            <center>
+                <a id="home-page" href="manifold.html"><i class="fa fa-tv fa-1g"></i>&nbsp;&nbsp;主页</a>
+                <a id="topic-tree" href="topic-tree.html"><i class="fa fa-tree fa-1g"></i>&nbsp;&nbsp;话题树</a>
+                <a id="discover-page" href="discover.html"><i class="fa fa-twitch fa-1g"></i>&nbsp;&nbsp;发现</a>&nbsp;&nbsp;
+                <div class="search-input-container">
+                    <input id="search-input" type="text" placeholder="搜索 问题/话题/用户.." onkeyup="search_autocomplete()">
+                    <div class="search-autocomplete">
+
+                    </div>
+                </div>
+                <button id="search-btn" onclik=""><i class="fa fa-search fa-lg"></i>&nbsp;search</button>
+            </center>
+        </div>
+    </div>
+
+
+    <div class="right-top">
+        <li>
+            <a href="javascript:openQuestionEdit();">
+                <i class="fa fa-lightbulb-o fa-2x"></i>
+                <div>
+                    我要提问
+                </div>
+            </a>
+        </li>
+        <li>
+            <a href="javascript:openCollectionEdit(-1);">
+                <i class="fa fa-bookmark-o fa-2x"></i>
+                <div>
+                    我的收藏
+                </div>
+            </a>
+        </li>
+    </div>
+
+
+    <div class="right-foot">
+        <div class="menu">
+            <li class="item" id="profile">
+                <a id="username" href="#profile" class="btn"><i class="fa fa-user-o"></i>用户名</a>
+                <div class="smenu">
+                    <a href="javascript:openUserInfoEdit()">个人资料</a>
+                    <a href="#">Picture</a>
+                </div>
+            </li>
+            <li class="item" id="message">
+                <a href="#message" class="btn"><i class="fa fa-envelope"></i>消息</a>
+                <div class="smenu">
+                    <a href="#">new</a>
+                    <a href="#">Sent</a>
+                    <a href="#">Spam</a>
+                </div>
+            </li>
+            <li class="item" id="setting">
+                <a href="#setting" class="btn"><i class="fa fa-bell-o"></i>关注</a>
+                <div class="smenu">
+                    <a href="#">关注了</a>
+                    <a href="#">关注者</a>
+                </div>
+            </li>
+            <li class="item" id="Logout">
+                <a href="javascript:logout();" class="btn"><i class="fa fa-sign-out"></i>Logout</a>
+            </li>
+        </div>
+    </div>
+
+
+    <div class="question-container">
+        <!--问题描述-->
+        <div class="question-description">
+
+        </div>
+
+        <!--编辑新回答-->
+        <div class="new-answer" style="display: none">
+            <!---->
+            <div class="new-answer-header">
+                <img class="user-avatar" src="">
+                <div class="user-info">
+                    <div class="user-name">
+                    </div>
+                    <div class="user-industry">
+
+                    </div>
+                </div>
+            </div>
+            <div class="new-answer-content">
+                <textarea class="ck-editor ck-content" id="new-answer-editor" name="new-answer-editor">写回答...</textarea>
+            </div>
+            <div class="new-answer-footer">
+                <button class="cancelbutton" onclick="closeAnswerEditor()" type="button">取消</button>
+
+            </div>
+        </div>
+
+        <!--回答内容-->
+        <div class="answer-container">
+
+
+
+        </div>
+
+    </div>
+
+    <!--基础js-->
+
+    <script type="text/javascript " src="js/manifold.js"></script>
+    <script type="text/javascript " src="js/question-edit-layer.js"></script>
+    <!--layer-->
+    <script type="text/javascript " src="layer/2.4/layer.js"></script>
+    <!--layui-->
+    <script type="text/javascript" src="layui/layui.js"></script>
+    <!--富文本-->
+    <script src="ckeditor5-build-classic-master/build/ckeditor.js"></script>
+
+    <script>
+        var editor_obj = null;
+        var questionId = null;
+        var questioner = null;
+        var question_desc = null;
+
+        var answersData = new Array();
+        var countAnswer = 0;
+        var aid = -1;
+
+        $(function() {
+            /*配置layui弹出层自定义样式*/
+            layer.config({
+                skin: 'my-layer-skin'
+            });
+
+
+            $('#home-page').css({
+                'background-color': '#3498db',
+                'color': '#fff'
+            });
+
+            $('#username').html('<i class="fa fa-user-o"></i>' + user_info.username + '<right><img src="image/user_avatar/' + user_info.avatar + '"></right>');
+            /*加载问题*/
+            var url = location.search;
+            var questionId = 5;
+            if (url.indexOf("?") != -1) {
+                var str = url.split("=");
+                questionId = str[1];
+            }
+            loadQuestion(questionId);
+            loadTextArea();
+
+
+            $('.new-answer-header .user-name').html(user_info.username);
+            $('.new-answer-header .user-avatar').attr('src', 'image/user_avatar/' + user_info.avatar);
+            $('.new-answer-header .user-industry').html(user_info.industry);
+
+        });
+
+        function loadQuestion(questionId) {
+            $.ajax({
+                url: 'manifold/question/querybyid',
+                method: 'get',
+                data: {
+                    'questionId': questionId
+                },
+                success: function(returnData) {
+                    questionId = returnData.questionId;
+                    question_desc = returnData.questionDesc;
+                    var div = `
+                    <div class="question-title">
+                        ` + returnData.title + `
+                    </div>
+                    <div class="question-questioner">
+                        提问者:` + returnData.user.username + `
+                    </div>
+
+                    <div class="question-desc">
+                       <button onclick="openQuestionDesc()" type="button"><i class="fa fa-caret-square-o-down"></i> 显示详细</button>
+                    </div>
+                    <div class="question-date">
+                        创建于 ` + returnData.createTime + `
+                    </div>
+                    <div class="question-bottom">
+                        <li>
+                            <button type="button"><i class="fa fa-eye"></i> 关注问题</button>
+                        </li>
+                        <li>
+                            <button id="write-new-answer" onclick="openAnswerEditor()" type="button"><i class="fa fa-edit"></i> 写回答</button>
+                        </li>
+                        <li>
+                            <button type="button"><i class="fa fa-child"></i> 邀请回答</button>
+                        </li>
+                    </div>
+                    `;
+                    $('.question-description').html(div);
+                    $('.new-answer-footer').append('<button class="subbutton" onclick="submitNewAnswer(' + questionId + ')" type="button">发布</button>')
+
+                    loadAnswer(questionId);
+                },
+                dataType: 'json'
+            });
+            /*记录用户行为*/
+            $.ajax({
+                url: 'manifold/topic/questionId',
+                method: 'get',
+                data: {
+                    'questionId': questionId
+                },
+                success: function(returnData) {
+                    $.each(returnData, function(i, v) {
+                        addPrefer(user_info.uid, v);
+                    })
+                },
+                dataType: 'json'
+            });
+
+        }
+        /*记录用户行为偏好*/
+        function addPrefer(uid, topicId) {
+            $.ajax({
+                url: 'manifold/user/prefer',
+                method: 'post',
+                data: {
+                    'uid': uid,
+                    'topicId': topicId
+                }
+            })
+        }
+
+        function openQuestionDesc() {
+            $('.question-desc').html(question_desc + '<button onclick="closeQuestionDesc()" type="button"><i class="fa fa-caret-square-o-up"></i> 收起</button>');
+        }
+
+        function closeQuestionDesc() {
+            $('.question-desc').html(' <button onclick = "openQuestionDesc()" type = "button"><i class = "fa fa-caret-square-o-down" > </i> 显示详细</button > ');
+        }
+
+        function closeAnswerEditor() {
+            $('.new-answer').css('display', 'none');
+        }
+
+        function openAnswerEditor() {
+            $('.new-answer').css('display', 'block');
+        }
+
+
+        function submitNewAnswer(questionId) {
+            $.ajax({
+                url: 'manifold/answer',
+                method: 'post',
+                data: {
+                    'questionId': questionId,
+                    'uid': user_info.uid,
+                    'content': editor_obj.getData()
+                },
+                success: function(returnData) {
+                    if (returnData == 'ok') {
+                        //操作成功，进行提示，并关闭当前窗口(设置时间，不然会有抖动情况)
+                        layer.msg('发布成功', {
+                            time: 1000,
+                            icon: 1
+                        }, function() {
+                            closeAnswerEditor();
+                            $('#write-new-answer').css('display', 'none');
+                            loadAnswer(questionId);
+                        });
+                    } else {
+                        layer.msg('发布失败', {
+                            icon: 2
+                        });
+                    }
+                },
+                dataType: 'text'
+            })
+        }
+
+
+        function loadAnswer(questionId) {
+            countAnswer = 0;
+            var div = '';
+            $.ajax({
+                url: 'manifold/answer/byquesionid',
+                method: 'get',
+                data: {
+                    'questionId': questionId
+                },
+                success: function(returnData) {
+                    $.each(returnData, function(i, v) {
+                        countAnswer++;
+                        answersData[i] = v;
+                        div += `
+                    <div class="answer-box">
+                        <div class="answer">
+                            <div class="answer-header">
+                                <img class="user-avatar" src="image/user_avatar/` + v.user.avatar + `">
+                                <div class="user-info">
+                                    <div class="user-name">
+                                        <h5>` + v.user.username + `</h5>
+                                        <button id="follow` + v.user.uid + `" onclick="clickFollow(` + v.user.uid + `)" class="follow-button"><i class="fa fa-plus-circle fa-1g"></i> 关注</button>
+                    
+                                    </div>
+                                    
+                                    <div class="user-industry">
+                                        ` + v.user.industry + `
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="answer` + v.answerId + `" class="answer-content">
+                                <button onclick="openAnswerContent('` + v.answerId + `')" type="button"><i class="fa fa-caret-square-o-down"></i> 显示内容</button>
+                            </div>
+                            <div class="answer-footer">
+                                <li>
+                                    <button class="button1" onclick="alert('agree')" type="button"><i class="fa fa-thumbs-up"></i> ` + v.agree + `</button>
+                                </li>
+                                <li>
+                                    <button class="button1" onclick="alert('agree')" type="button"><i class="fa fa-thumbs-down"></i> ` + v.disagree + `</button>
+                                </li>
+                                <li>
+                                    <button id="` + v.answerId + `CommentBtn" class="button2" onclick="getComment('` + v.answerId + `')" type="button"><i class="fa fa-commenting"></i> 评论</button>
+                                </li>
+                                <li>
+                                    <button id="` + v.answerId + `CollectBtn" class="button2" onclick="collectAnswer('` + v.answerId + `')" type="button"><i class="fa fa-bookmark"></i> 收藏</button>
+                                </li>
+                            </div>
+                            <div id="` + v.answerId + `comment-container" class="comment-container">
+                                <div id="` + v.answerId + `comment-list" class="comment-list">
+                                    
+                                </div>
+                                <div class="comment-container-footer">
+                                    <textarea id="` + v.answerId + `comment"></textarea>
+                                    <button id="` + v.answerId + `comment-btn" class="subComBtn" onclick="submitComment('` + v.answerId + `','` + v.user.uid + `')" type="button">评论</button>
+                                </div>
+                            </div>
+                        </div>
+                       
+                    </div>
+                    `;
+                    });
+                    $('.answer-container').html(div);
+                },
+                dataType: 'json'
+            })
+        }
+
+        function openAnswerContent(answerId) {
+            var content = '';
+            for (var i = 0; i < answersData.length; i++) {
+                if (answersData[i].answerId == answerId) {
+                    content += answersData[i].content + `<button onclick="closeAnswerContent('` + answerId + `')" type="button"><i class="fa fa-caret-square-o-up"></i> 收起</button>`;
+                    $('#answer' + answerId).html(content);
+                    break;
+                }
+            }
+        }
+
+        function closeAnswerContent(answerId) {
+            var content = '';
+            for (var i = 0; i < answersData.length; i++) {
+                if (answersData[i].answerId == answerId) {
+                    content += `<button onclick="openAnswerContent('` + answerId + `')" type="button"><i class="fa fa-caret-square-o-down"></i> 显示详细</button>`
+                    $('#answer' + answerId).html(content);
+                    break;
+                }
+            }
+        }
+
+        function loadTextArea() {
+            ClassicEditor
+                .create(document.querySelector("#new-answer-editor"), {
+                    ckfinder: {
+                        uploadUrl: "manifold/upload/image" //图片上传url
+                    },
+                    toolbar: ["heading", 'bold', 'italic', "link", 'numberedList', 'imageTextAlternative', 'imageUpload', 'blockQuote', 'undo', 'redo'],
+                    language: 'zh-cn',
+                    image: {
+                        toolbar: ['imageTextAlternative'],
+                        styles: ['full', 'side']
+                    },
+                    mention: {
+                        feeds: [{
+                            marker: '@',
+                            feed: ['@Barney', '@Lily', '@Marshall', '@Robin', '@Ted'],
+                            minimumCharacters: 1
+                        }]
+                    }
+                })
+                .then(editor => {
+                    editor_obj = editor;
+
+                    console.log(editor);
+                })
+                .catch(error => {
+                    console.error(error);
+                })
+        }
+
+        /*上传评论*/
+        function submitComment(answerId, reply_to_uid) {
+            console.log('wel');
+            var comment_content = $('#' + answerId + 'comment').val();
+            $.ajax({
+                url: 'manifold/comment/new',
+                method: 'post',
+                data: {
+                    'uid': user_info.uid,
+                    'answerId': answerId,
+                    'replyToUid': reply_to_uid,
+                    'content': comment_content
+                },
+                success: function(returnData) {
+                    if (returnData > 0) {
+                        //操作成功，进行提示，并关闭当前窗口(设置时间，不然会有抖动情况)
+                        layer.msg('评论成功', {
+                            time: 1000,
+                            icon: 1
+                        });
+                        $('#' + answerId + 'comment').val('');
+                        $('#' + answerId + 'CommentBtn').trigger('click');
+                        $('#' + answerId + 'CommentBtn').trigger('click');
+                    } else {
+                        layer.msg('修改失败', {
+                            icon: 2
+                        });
+                    }
+                },
+                dataType: 'json'
+            })
+        }
+
+        /*请求评论*/
+        function getComment(answerId) {
+
+            $.ajax({
+                url: 'manifold/comment',
+                method: 'get',
+                data: {
+                    'answerId': answerId
+                },
+                success: function(returnData) {
+                    var div = '';
+                    $.each(returnData, function(i, v) {
+                        div += `<div class="comment">
+                                <div class="comment-header">
+                                    <div class="com-ava">
+                                        <img src="image/user_avatar/` + v.user.avatar + `">
+                                    </div>
+                                    <div class="com-user">
+                                        ` + v.user.username + ` 回复 ` + v.replyToUser.username + `
+                                    </div>
+                                </div>
+                                <div class="comment-body">
+                                    <p>` + v.content + `</p>
+                                </div>                    
+                            </div>
+                            `;
+
+                    })
+
+                    $('#' + answerId + 'comment-list').html(div);
+
+                },
+                dataType: 'json'
+            })
+            $('#' + answerId + 'CommentBtn').attr('onclick', 'closeComment(' + answerId + ')');
+            $('#' + answerId + 'comment-container').css('display', 'block');
+        }
+
+        function closeComment(answerId) {
+            $('#' + answerId + 'CommentBtn').attr('onclick', 'getComment(' + answerId + ')');
+            $('#' + answerId + 'comment-container').css('display', 'none');
+        }
+
+        function collectAnswer(answerId) {
+            aid = answerId;
+            openCollectionEdit();
+        }
+
+        function getAid() {
+            return aid;
+        }
+
+        function reSetAid() {
+            aid = -1;
+        }
+
+        function loadPopQuestion() {
+
+        }
+
+        function clickFollow(uid) {
+            console.log(uid);
+            console.log(user_info.uid);
+            $.ajax({
+                url: 'manifold/user/follow',
+                method: 'post',
+                data: {
+                    'followed': uid,
+                    'follower': user_info.uid
+                },
+                success: function(returnData) {
+                    if (returnData > 0) {
+                        layer.msg('关注成功', {
+                            time: 1000,
+                            icon: 1
+                        });
+                    } else {
+                        layer.msg('关注失败', {
+                            icon: 2
+                        });
+                    }
+                },
+                dataType: 'text'
+            })
+            $('#follow' + uid).html('<i class="fa fa-check-circle fa-1g"></i> 已关注')
+        }
+
+        function search_autocomplete() {
+            $('.search-autocomplete').html('');
+            var keyword = $('#search-input').val();
+            if (keyword != '') {
+                $.ajax({
+                    url: 'manifold/question/key',
+                    method: 'get',
+                    data: {
+                        'keyword': keyword
+                    },
+                    success: function(returnData) {
+                        if (returnData.length != 0) {
+                            var div = '';
+                            $.each(returnData, function(i, v) {
+                                var str = lightKeyWrod(keyword, v.title);
+                                if (str.length > 15) {
+                                    str = str.substring(0, 15);
+                                }
+                                div += `
+                <div onclick="goToQuestion('` + v.questionId + `')" class="search-autocomplete-item">
+                    ` + str + `
+                </div>
+                `;
+                            })
+                            $('.search-autocomplete').html(div);
+                        } else {
+                            $('.search-autocomplete').css('display', 'none');
+                        }
+
+                    },
+                    dataType: 'json'
+                })
+                $('.search-autocomplete').css('display', 'block');
+            } else {
+                $('.search-autocomplete').css('display', 'none');
+                $('.search-autocomplete').html('');
+            }
+        }
+
+        function goToQuestion(questionId) {
+            window.location.href = "question.html?questionId=" + questionId;
+        }
+
+        function lightKeyWrod(keyword, str) {
+            var reg = new RegExp("(" + keyword + ")", "g");
+            var newstr = str;
+            if (!reg.test(str))
+                newstr = str.replace(reg, "<font color=red>$1</font>");
+            return newstr;
+        }
+
+        function logout() {
+            layer.confirm("确定要退出吗", () => {
+                removeJwtToken();
+                window.location.href = "login.html";
+            })
+        }
+    </script>
+
+</body>
+
+</html>

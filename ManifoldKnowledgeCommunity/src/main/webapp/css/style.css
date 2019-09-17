@@ -1,0 +1,483 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    list-style: none;
+    text-decoration: none;
+}
+
+
+/*-------------------------------------------顶部导航菜单---------------------------------------------*/
+
+.top-menu-nav {
+    width: 100%;
+    height: 7%;
+    position: fixed;
+    background: #333;
+    top: 0%;
+    z-index: 99;
+}
+
+
+/* 在顶部导航栏中添加黑色背景颜色 */
+
+.topnav {
+    width: 100%;
+    height: 7%;
+    position: absolute;
+    background-color: #333;
+    top: 0%;
+    z-index: 1;
+}
+
+
+/* 设置导航栏的链接样式 */
+
+.topnav a {
+    vertical-align: top;
+    margin-top: 8px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 5px 2%;
+    text-decoration: none;
+    font-size: 17px;
+    border-radius: 3px;
+    display: inline-block;
+}
+
+.topnav button {
+    vertical-align: top;
+    margin-top: 8px;
+    display: inline-block;
+    border: none;
+    border-radius: 3px;
+    color: #333;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 5px 1%;
+    text-decoration: none;
+    font-size: 17px;
+    background: #c5c5c5;
+}
+
+.topnav button:hover {
+    background: #195277;
+    color: #fff;
+}
+
+
+/* 在悬停时更改链接的颜色 */
+
+.topnav a:hover {
+    background-color: #3498db;
+    color: #fff;
+}
+
+
+/* 突出显示当前选中的元素 */
+
+.topnav a.active {
+    background-color: rgba(0, 45, 82, 75);
+    color: white;
+}
+
+
+/* 设置导航栏的搜索框样式 */
+
+.topnav input[type=text] {
+    width: 225px;
+    height: 19px;
+    padding: 6px;
+    border: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    margin-right: 20px;
+    font-size: 14px;
+    background: rgba(250, 250, 250, 0.90);
+}
+
+.topnav .search-input-container {
+    display: inline-block;
+}
+
+.topnav .search-input-container .search-autocomplete {
+    margin-top: 15px;
+    margin-right: 20px;
+    border: none;
+    border-radius: 5px;
+    width: 250px;
+    min-height: 35px;
+    background: rgb(250, 250, 250);
+    z-index: 99;
+    box-shadow: 0px 0px 3px rgb(71, 71, 71);
+    display: none;
+}
+
+.topnav .search-input-container .search-autocomplete .search-autocomplete-item {
+    padding-top: 7px;
+    padding-left: 10px;
+    text-align: left;
+    font-size: 14px;
+    font-family: sans-serif;
+    color: black;
+    margin-top: 1px;
+    margin-left: 5px;
+    margin-right: 5px;
+    border: none;
+    border-radius: 2px;
+    width: 240px;
+    min-height: 30px;
+}
+
+.search-autocomplete .search-autocomplete-item:hover {
+    background: #76b2da;
+}
+
+.topnav .search-input-container .search-autocomplete .search-autocomplete-item p {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
+/*-------------------------------------主页容器-------------------------------------*/
+
+.main-container {
+    position: absolute;
+    top: 12%;
+    left: 18%;
+    width: 700px;
+    height: 575px;
+}
+
+.main-container .sub-main-container {
+    border: none;
+    border-radius: 5px;
+    padding-top: 2px;
+    padding-bottom: 20px;
+    /*background: rgba(61, 142, 209, 0.55);*/
+}
+
+.sub-main-container .main-container-header {
+    padding: 5px 5px;
+    font-size: 20px;
+    font-family: sans-serif;
+    font-weight: bold;
+    margin-top: 20px;
+    margin-left: 25px;
+    margin-right: 25px;
+    width: 640px;
+    height: 55px;
+    border: none;
+    border-radius: 5px;
+    background: rgb(250, 250, 250);
+    box-shadow: 0px 0px 15px rgb(108, 108, 108);
+}
+
+.sub-main-container .main-container-header a {
+    vertical-align: top;
+    margin-top: 8px;
+    margin-left: 50px;
+    margin-right: 50px;
+    color: #fff;
+    font-weight: bold;
+    font-size: 16px;
+    font-family: sans-serif;
+    text-align: center;
+    padding: 7px 2%;
+    text-decoration: none;
+    font-size: 17px;
+    border-radius: 3px;
+    background: #333;
+    display: inline-block;
+}
+
+.main-container-body {
+    font-size: 16px;
+    font-family: sans-serif;
+    margin-top: 5px;
+    margin-left: 25px;
+    margin-right: 25px;
+    width: 640px;
+    border: none;
+}
+
+.main-container-body .q-item {
+    padding: 5px 5px;
+    font-size: 16px;
+    font-family: sans-serif;
+    margin-top: 5px;
+    width: 640px;
+    min-height: 125px;
+    border: none;
+    border-radius: 5px;
+    background: rgb(250, 250, 250);
+    box-shadow: 0px 0px 15px rgb(108, 108, 108);
+}
+
+.main-container-body .q-item:hover {
+    background: rgb(120, 171, 204, 0.75);
+}
+
+
+/*-------*/
+
+.q-item .item-header {
+    margin-top: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+    width: 500px;
+    height: 50px;
+}
+
+.q-item .item-header .user-avatar {
+    margin-top: 7px;
+    margin-left: 10px;
+    margin-bottom: 7px;
+    width: 39px;
+    height: 39px;
+    border: none;
+    object-fit: cover;
+    display: inline-block;
+}
+
+.q-item .item-header .user-info {
+    font-size: 16px;
+    color: black;
+    vertical-align: top;
+    padding: 0px 0px;
+    margin-top: 7px;
+    margin-left: 0px;
+    margin-bottom: 7px;
+    width: 400px;
+    height: 41px;
+    border: none;
+    display: inline-block;
+}
+
+.user-info .user-name {
+    padding: 0px 0px;
+    margin-top: 0px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+    width: 400px;
+    height: 20px;
+    border: none;
+}
+
+.user-info .user-industry {
+    padding: 0px 0px;
+    margin-top: 1px;
+    margin-left: 0px;
+    margin-bottom: 0px;
+    width: 400px;
+    height: 20px;
+    border: none;
+}
+
+
+/*----*/
+
+.q-item .item-body {
+    padding: 10px 10px;
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    margin: 5px 10px;
+    width: 575px;
+    max-height: 55px;
+    background: rgba(250, 250, 250, 0.75);
+    box-shadow: 0px 0px 5px rgb(108, 108, 108);
+}
+
+.q-item .item-body:hover {
+    background: rgba(225, 225, 225, 0.75);
+}
+
+.main-container-body .pop {
+    position: absolute;
+    top: 18%;
+    left: 82%;
+    text-align: center;
+    background: #2c3e50;
+    color: #fff;
+    width: 70px;
+    transform: rotate(45deg);
+    padding: 10px 40px;
+}
+
+.sub-main-container .main-container-footer {
+    text-align: center;
+    padding: 5px 5px;
+    font-size: 20px;
+    font-weight: bold;
+    font-family: sans-serif;
+    margin-top: 5px;
+    margin-left: 25px;
+    margin-right: 25px;
+    width: 640px;
+    min-height: 55px;
+    border: none;
+    border-radius: 5px;
+    background: rgb(250, 250, 250);
+    box-shadow: 0px 0px 15px rgb(108, 108, 108);
+}
+
+
+/*树形子节点所属问题集合*/
+
+.sub-question-set {
+    margin-top: -100px;
+    margin-left: 250px;
+    width: 700px;
+    min-height: 275px;
+    z-index: 15;
+}
+
+
+/*-------------------------------------我要提问-------------------------------------*/
+
+.right-top {
+    position: fixed;
+    top: 20%;
+    right: 5%;
+    width: 300px;
+    height: 120px;
+    border-radius: 5px;
+    transform: translate(-50%, -50%);
+    background: rgba(25, 25, 25, 0.75);
+    /*background: rgba(210, 210, 210, 0.55);*/
+}
+
+.right-top li {
+    float: left;
+    width: 120px;
+    height: 90px;
+    background: #fff;
+    margin: 15px 15px;
+    font-size: 17px;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 15px;
+}
+
+.right-top li a i {
+    margin: 10px 50px;
+}
+
+.right-top li a {
+    color: rgb(75, 75, 75);
+}
+
+.right-top li a:hover {
+    color: #2980b9;
+}
+
+
+/*----------------------------------------右下角导航菜单-----------------------------------------*/
+
+.right-foot {
+    position: fixed;
+    bottom: -12%;
+    right: 5%;
+    transform: translate(-50%, -50%);
+    display: inline-block;
+}
+
+.menu {
+    width: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.item {
+    /*border-top: 1px solid #2980b9;*/
+    border-top: 1px solid #2980b9;
+    overflow: hidden;
+}
+
+.btn {
+    display: block;
+    padding: 16px 20px;
+    background: #10517c;
+    color: white;
+    position: relative;
+}
+
+.btn::before {
+    content: "";
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    background: #10517c;
+    left: 20px;
+    bottom: -7px;
+    transform: rotate(45deg);
+}
+
+.btn i {
+    margin-right: 10px;
+}
+
+.smenu {
+    background: #333;
+    overflow: hidden;
+    transition: max-height 0.3s;
+    max-height: 0;
+}
+
+.smenu a {
+    display: block;
+    padding: 16px;
+    color: white;
+    font-size: 14px;
+    margin: 4px 0;
+    position: relative;
+}
+
+.smenu a::before {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 100%;
+    background: #10517c;
+    left: 0;
+    top: 0;
+    transition: 0.3;
+    opacity: 0;
+}
+
+.smenu a:hover::before {
+    opacity: 1;
+}
+
+.item:target .smenu {
+    max-height: 10em;
+}
+
+#username img {
+    margin-top: 0px !important;
+    margin-left: 25px !important;
+    margin-bottom: 0px !important;
+    width: 39px;
+    height: 39px;
+    border: none;
+    object-fit: cover;
+    display: inline-block;
+}
+
+
+/*--------------------------------------问题容器--------------------------------------*/
+
+.question-container {
+    width: 600px;
+    top: 20%;
+    left: 15%;
+    padding: 5px 10px;
+    position: absolute;
+    display: inline-block;
+}

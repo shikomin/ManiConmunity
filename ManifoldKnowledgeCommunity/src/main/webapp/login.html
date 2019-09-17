@@ -1,0 +1,292 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>流形知识社区</title>
+    <meta charset="UTF-8">
+
+    <link rel="shortcut icon" type="image/jpeg" href="image/manifold-logo5.jpg" />
+    <link rel="stylesheet" type="text/css" href="css/base.css">
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+
+    <style>
+        form {
+            position: relative;
+        }
+        
+        #regi-username-error {
+            position: absolute;
+            top: 11px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+        
+        #regi-email-error {
+            position: absolute;
+            top: 61px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+        
+        #regi-password-error {
+            position: absolute;
+            top: 111px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+        
+        #regi-password-confirm-error {
+            position: absolute;
+            top: 161px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+        
+        #login-email-error {
+            position: absolute;
+            top: 13px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+        
+        #login-password-error {
+            position: absolute;
+            top: 61px;
+            right: 6px;
+            font-size: 14px;
+            color: #c33;
+        }
+    </style>
+</head>
+
+<body>
+    <!--<canvas id="c"></canvas>-->
+
+    <div id="WebGL-output"></div>
+    <div id="Stats-output"></div>
+    <div class="wrap ">
+
+        <header>
+            <h1>流形</h1>
+            <h5>开放、专业的知识共享社区</h5>
+            <p>与世界分享你知识</p>
+        </header>
+
+        <section>
+            <ul>
+                <li id="registerHeader ">注册</li>
+                <li id="loginHeader " class="active-header ">登录</li>
+            </ul>
+            <div style="display: none; ">
+                <form id="registerForm">
+                    <div class="inputs ">
+                        <input type="text " name="username " id="registerInputUsername" placeholder="姓名 " autocomplete="off">
+                        <div class="register-input-email">
+                            <input class="inputElem" type="text" name="email" id="registerInputEmail" placeholder="邮箱 " required autofocus autocomplete="off" onkeyup="autoCompleteEmail('register-input-email','register-complete-email','registerInputEmail')">
+                            <ul id="register-complete-email">
+
+                            </ul>
+                        </div>
+                        <input type="password" name="password " id="registerInputPassword" placeholder="密码（不少于6位） " autocomplete="new-password">
+                        <input type="password" name="password-confirm " id="registerInputPassword-confirm" placeholder="确认密码" autocomplete="new-password">
+                        <span id="regi-username-error"></span>
+                        <span id="regi-email-error"></span>
+                        <span id="regi-password-error"></span>
+                        <span id="regi-password-confirm-error"></span>
+                    </div>
+                </form>
+                <h6>注册机构号&nbsp;&nbsp;©
+                    <!-- -->2019
+                    <!-- -->流形·京 ICP 证 110745 号</h6>
+                <h6>京公网安备 11010802010035 号</h6>
+                <h6>违法和不良信息举报：010-82716601</h6>
+                <br>
+                <button id="registerButton" type="button ">注册</button>
+                <h5>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-----copyright@2019流形-----</h5>
+            </div>
+            <div id="login-container">
+                <form id="loginForm">
+                    <div class="inputs ">
+                        <div class="login-input-email">
+                            <input class="inputElem" type="text" name="email" id="loginInputEmail" placeholder="邮箱" required autofocus autocomplete="off" onkeyup="autoCompleteEmail('login-input-email','login-complete-email','loginInputEmail')">
+                            <ul id="login-complete-email">
+
+                            </ul>
+                        </div>
+                        <input type="password" name="password" id="loginInputPassword" placeholder="密码 " autocomplete="new-password">
+                        <span id="login-email-error "></span>
+                        <span id="login-password-error "></span>
+                    </div>
+                    <h6>注册机构号&nbsp;&nbsp;©
+                        <!-- -->2019
+                        <!-- -->流形·京 ICP 证 110745 号</h6>
+                    <h6>京公网安备 11010802010035 号</h6>
+                    <h6>违法和不良信息举报：010-82716601</h6>
+                    <br>
+                    <input id="loginButton" type="button" value="登录">
+                    <!-- <div id="wb_connect_btn ">weiboLogin</div> -->
+                    <!--<a href="https://api.weibo.com/oauth2/authorize?client_id=968565512&response_type=code&redirect_uri=http://naivee.me/weiboLogin ">微博登录</a>-->
+                    <h5>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-----copyright@2019流形-----</h5>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!--基础js-->
+    <script type="text/javascript " src="js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript " src="layer/2.4/layer.js"></script>
+    <script type="text/javascript " src="js/login.js "></script>
+    <!--token服务-->
+    <script type="text/javascript " src="js/jwt.js"></script>
+    <!--几何特效-->
+    <script src="js/canvasTest2.js "></script>
+    <script src="js/three.min.js"></script>
+
+    <!--<script src="js/Stats.min.js"></script>-->
+    <!--<script src="js/dat.gui.min.js"></script>-->
+    <!--其他的几何特效-->
+    <!--<script type="text/javascript " src="js/canvasTest.js "></script>-->
+    <script>
+        $(function() {
+
+            /* 注册处理 */
+            var registerButton = $("#registerButton");
+            var registerForm = $("#registerForm");
+            var registerInputUsername = $("#registerInputUsername");
+            var registerInputEmail = $("#registerInputEmail");
+            var registerInputPassword = $("#registerInputPassword");
+            var registerInputPasswordConfirm = $("#registerInputPassword-confirm");
+
+            /*	注册校验*/
+            registerInputUsername.blur(function() {
+                var value = $(this).val();
+                if (value.length < 1 || value.length > 30) {
+                    $("#regi-username-error ").text("用户名长度须在1-30个字符以内 ");
+                } else {
+                    $("#regi-username-error ").text(" ");
+                }
+            });
+            registerInputEmail.blur(function() {
+                var value = $(this).val();
+                var reg = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+                if (!reg.test(value)) {
+                    $("#regi-email-error ").text("请输入正确的邮箱 ");
+                } else {
+                    $("#regi-email-error ").text(" ");
+                }
+            });
+            registerInputPassword.blur(function() {
+                var value = $(this).val();
+                var reg = /[a-zA-Z0-9]{6,10}/;
+                if (!reg.test(value)) {
+                    $("#regi-password-error").text("密码长度须在6-20个字符 ");
+                } else {
+                    $("#regi-password-error").text(" ");
+                }
+            });
+            registerInputPasswordConfirm.blur(function() {
+                var value = $(this).val();
+                var psw = registerInputPassword.val();
+                if (value != psw) {
+                    $("#regi-password-confirm-error").text("两次密码不一致");
+                } else {
+                    $("#regi-password-confirm-error").text(" ");
+                }
+            })
+
+
+            /* 注册处理 */
+            registerButton.on("click", function() {
+                var form = new FormData();
+                form.append("username", registerInputUsername.val());
+                form.append("email", registerInputEmail.val());
+                form.append("password", registerInputPassword.val());
+                $.ajax({
+                    url: "manifold/user",
+                    type: "post",
+                    data: form,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'text',
+                    success: function(response) {
+                        window.location.href = 'emailcheck.html' + '?email=' + response;
+                    }
+                });
+            });
+
+            /*回车登录*/
+            $('#login-container').bind("keydown", function(e) {
+                var theEvent = e || window.event;
+                var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+                if (code == 13) {
+                    $('#loginButton').click();
+                }
+            })
+
+
+            /* 登录 */
+            var loginButton = $("#loginButton");
+            var loginForm = $("#loginForm");
+            var loginInputEmail = $("#loginInputEmail");
+            var loginInputPassword = $("#loginInputPassword");
+
+            /* 登录处理 */
+            loginButton.on("click", function() {
+                var email = loginInputEmail.val();
+                var password = loginInputPassword.val();
+                $.ajax({
+                    url: "manifold/user",
+                    type: "get",
+                    data: {
+                        'email': email,
+                        'password': password
+                    },
+                    dataType: 'text',
+                    success: function(responseData) {
+                        if (responseData == 0) {
+                            layer.msg('账号被封禁，无法登陆', {
+                                icon: 2
+                            });
+                        } else if (responseData == 1) {
+                            layer.msg('请检查账号或密码', {
+                                icon: 2
+                            });
+                        } else {
+                            layer.msg('登陆成功', {
+                                time: 1000,
+                                icon: 1
+                            }, function() {
+                                setJwtToken(responseData);
+                                setTimeout("toHomePage();", 500);
+                            });
+                        }
+                    },
+                    error: function(responseData) {
+                        if (responseData == 0) {
+                            layer.msg('账号被封禁，无法登陆', {
+                                icon: 2
+                            });
+                        } else if (responseData == 1) {
+                            layer.msg('请检查账号或密码', {
+                                icon: 2
+                            });
+                        }
+                    }
+                });
+            });
+
+        });
+
+        function toHomePage() {
+            location.href = 'manifold.html';
+        }
+    </script>
+
+</body>
+
+</html>

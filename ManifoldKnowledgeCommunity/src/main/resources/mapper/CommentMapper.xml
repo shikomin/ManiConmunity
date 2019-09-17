@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<!-- namespace:命名空间，该值与接口保持一致 -->
+<mapper namespace="com.wander.manifold.mapper.ICommentMapper">
+    <!-- 开启二级缓存，默认情况下没有有开启的 -->
+    <cache/>
+    <resultMap type="Comment" id="commentMap">
+        <id property="commentId" column="comm_id"/>
+        <result property="answerId" column="answer_id"/>
+        <result property="content" column="content"/>
+        <result property="agree" column="agree"/>
+
+        <association property="user" javaType="User">
+            <id property="uid" column="uid1"/>
+            <result property="username" column="username1"/>
+            <result property="avatar" column="avatar"/>
+        </association>
+
+        <association property="replyToUser" javaType="User">
+            <id property="uid" column="uid2"/>
+            <result property="username" column="username2"/>
+        </association>
+
+    </resultMap>
+
+    <insert id="insert" parameterType="Comment">
+        insert into comment_table(answer_id,uid,reply_to_uid,content) values(#{answerId},#{user.uid},#{replyToUser.uid},#{content})
+    </insert>
+
+    <select id="queryByAnswerId" resultMap="commentMap">
+        select t1.*,t2.username as username2 from
+        (select a.comm_id,a.answer_id,a.uid as uid1,a.reply_to_uid as uid2,a.content,a.agree,b.username as username1,b.avatar
+        from comment_table a,user_table b where a.uid=b.uid and answer_id=#{arg0}) t1,user_table t2
+        where t1.uid2=t2.uid
+    </select>
+
+
+</mapper>
