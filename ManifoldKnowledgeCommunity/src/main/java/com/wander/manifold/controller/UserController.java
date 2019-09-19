@@ -1,5 +1,6 @@
 package com.wander.manifold.controller;
 
+import com.wander.core.utils.EncryptionUtil;
 import com.wander.core.utils.JwtTokenUtil;
 import com.wander.manifold.pojo.User;
 import com.wander.manifold.service.IUserService;
@@ -85,7 +86,10 @@ public class UserController {
         value.set(user.getEmail(), userCode, 3, TimeUnit.MINUTES);
         //user对象暂时保存到Redis，失效时间30分钟--测试阶段设置为3分钟
         value.set(user.getEmail() + "_info", user, 3, TimeUnit.MINUTES);
-        String activationCode = KemingCodeUtil.encode(user.getEmail() + "#div#" + userCode, kmSecretKey);
+
+        //加密
+        //String activationCode = KemingCodeUtil.encode(user.getEmail() + "#div#" + userCode, kmSecretKey);//keming加密
+        String activationCode = EncryptionUtil.string2MD5(user.getEmail() + "#div#" + userCode);//MD5解密
 
         try {
             MailUtil.sendMail(user.getEmail(), activationCode);

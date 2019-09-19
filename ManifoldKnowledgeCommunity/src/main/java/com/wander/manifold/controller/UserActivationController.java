@@ -1,5 +1,6 @@
 package com.wander.manifold.controller;
 
+import com.wander.core.utils.EncryptionUtil;
 import com.wander.manifold.pojo.User;
 import com.wander.manifold.service.IUserService;
 import com.wander.core.utils.KemingCodeUtil;
@@ -30,8 +31,11 @@ public class UserActivationController {
 
     @GetMapping("/activation")
     public String activation(String code) {
-        //解密
-        String str = KemingCodeUtil.decode(code, kmSecretKey);
+        //解密字符串
+        //String str = KemingCodeUtil.decode(code, kmSecretKey);//keming解密
+        String str= EncryptionUtil.convertMD5(EncryptionUtil.convertMD5(code));//MD5解密
+
+        //解析字符串
         String[] strArr = str.split("#div#");
         String email = strArr[0];
         String userCode = strArr[1];
